@@ -108,9 +108,8 @@ void modParser(string path) {
 				} else if (s == "height") {
 					temp.height = stoi(attackCode[++j]);
 				} else {
-					modLoadingErrors++;
 					if (debugMods) {
-						cout << "error (attacks) no: " << modLoadingErrors << " token: " << j << " name: " << attackCode[j] << "\n";
+						cout << "error (attacks) no: " << ++modLoadingErrors << " token: " << j << " name: " << attackCode[j] << "\n";
 					}
 				}
 				j++;
@@ -125,7 +124,21 @@ void modParser(string path) {
 		if(s == "-") {
 			food temp;
 			temp.name = s.substr(1);
-			i++;
+			int j = i + 1;
+			while(j < foodCode.size() && foodCode[j][0] != '-' && foodCode[j][0] != '=') {
+				s = foodCode[j];
+				if (s == "heal") {
+					temp.heal = stoi(foodCode[++j]);
+				} else if (s == "price") {
+					temp.price = stoi(foodCode[++j]);
+				} else {
+					if (debugMods) {
+						cout << "error (attacks) no: " << ++modLoadingErrors << " token: " << j << " name: " << attackCode[j] << "\n";
+					}
+				}
+			}
+			worldFoods.push_back(temp);
+			i = j - 1;
 		}
 	}
 	// function exit mark
