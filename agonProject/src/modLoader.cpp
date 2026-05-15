@@ -110,7 +110,7 @@ void modParser(string path) {
 				} else {
 					modLoadingErrors++;
 					if (debugMods) {
-						cout << "error (attacks) no: " << modLoadingErrors << " token: " << j << " name: " << attackCode[j] << "\m";
+						cout << "error (attacks) no: " << modLoadingErrors << " token: " << j << " name: " << attackCode[j] << "\n";
 					}
 				}
 				j++;
@@ -133,15 +133,15 @@ void modParser(string path) {
 
 void modLoader() {
 	cout << "=available mods=\n\n";
-	for (const auto& ent : fs::directory_iterator("../mods/")) {
+	for (const auto& ent : fs::directory_iterator("mods/")) {
 		cout << ent.path().filename() << "\n";
 	}
 	cout << "\nChoose which one to load\n-> ";
 	string input;
 	while (input != "exit") {
 		cin >> input;
-		if (fs::exists("../mods/" + input + ".as")) {
-			modParser("../mods/" + input + ".as");
+		if (fs::exists("mods/" + input + ".as")) {
+			modParser("mods/" + input + ".as");
 			cout << "successfully loaded : " << input << "\n";
 			cout << "with : " << modLoadingErrors << " errors\n-> ";
 		} else {
