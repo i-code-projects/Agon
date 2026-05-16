@@ -18,18 +18,6 @@ int isCodeHeader(string header) {
 	return 0;
 }
 
-void loadTokens(vector<string> &from, vector<string> &to, long long &c) {
-	while(c + 1 < from.size() && !isCodeHeader(from[c+1])) {
-		to.push_back(from[c]);
-		if (debugMods) {
-			cout << "number: " << c << " value: " << from[c] << "\n";
-		}
-		c++;
-	}
-	to.push_back(from[c]);
-	c++;
-}
-
 void modParser(string path) {
 	ifstream file(path);
 	string input((istreambuf_iterator<char>(file)),istreambuf_iterator<char>());
@@ -49,6 +37,7 @@ void modParser(string path) {
 			token += input[c];
 		}
 	}
+	
 	// weird ahh code :skull:
 	vector<string> dataCode;
 	vector<string> attackCode;
@@ -56,22 +45,27 @@ void modParser(string path) {
 	vector<string> armorCode;
 	vector<string> weaponCode;
 	vector<string> entityCode;
-	long long c = 0;
-	while(c < tokenList.size()) {
-		if (tokenList[c] == "=data=") {
-			loadTokens(tokenList,dataCode,c);
-		} else if (tokenList[c] == "=attacks=") {
-			loadTokens(tokenList,attackCode,c);
-		} else if (tokenList[c] == "=entities=") {
-			loadTokens(tokenList,entityCode,c);
-		} else if (tokenList[c] == "=food=") {
-			loadTokens(tokenList,foodCode,c);
-		} else if (tokenList[c] == "=armor=") {
-			loadTokens(tokenList,armorCode,c);
-		} else if (tokenList[c] == "=weapons=") {
-			loadTokens(tokenList,weaponCode,c);
-		} else {
-			c++;
+	string tempHeader = "sup";
+	for(size_t c = 0; c  < tokenList.size(); c++) {
+		string s = tokenList[c];
+		if (isCodeHeader(s)) {
+			tempHeader = s;
+		}
+		if (tempHeader == "=data=") {
+			dataCode.push_back(s);
+		} else if (tempHeader == "=attacks=") {
+			attackCode.push_back(s);
+		} else if (tempHeader == "=entities=") {
+			entityCode.push_back(s);
+		} else if (tempHeader == "=food=") {
+			foodCode.push_back(s);
+		} else if (tempHeader == "=armor=") {
+			armorCode.push_back(s);
+		} else if (tempHeader == "=weapons=") {
+			weaponCode.push_back(s);
+		}
+		if (debugMods) {
+			cout << "header: " << tempHeader << " num: " << c << " token: " << s << "\n";
 		}
 	}
 	// END LEXER SO NO MORE LEXING
@@ -97,7 +91,6 @@ void modParser(string path) {
 		if(s[0] == '-') {
 			attack temp;
 			temp.name = s.substr(1);
-			i++;
 			int j = i + 1;
 			while(j < attackCode.size() && attackCode[j][0] != '-' && attackCode[j][0] != '=') {
 				s = attackCode[j];
@@ -108,8 +101,9 @@ void modParser(string path) {
 				} else if (s == "height") {
 					temp.height = stoi(attackCode[++j]);
 				} else {
+					modLoadingErrors++;
 					if (debugMods) {
-						cout << "error (attacks) no: " << ++modLoadingErrors << " token: " << j << " name: " << attackCode[j] << "\n";
+						cout << "error (attacks) no: " << modLoadingErrors << " token: " << j << " name: " << attackCode[j] << "\n";
 					}
 				}
 				j++;
@@ -121,7 +115,7 @@ void modParser(string path) {
 	// parse foods (big back)
 	for(int i = 1;i < foodCode.size();i++) {
 		string s = foodCode[i];
-		if(s == "-") {
+		if(s[0] == '-') {
 			food temp;
 			temp.name = s.substr(1);
 			int j = i + 1;
@@ -132,14 +126,76 @@ void modParser(string path) {
 				} else if (s == "price") {
 					temp.price = stoi(foodCode[++j]);
 				} else {
+					modLoadingErrors++;
 					if (debugMods) {
-						cout << "error (attacks) no: " << ++modLoadingErrors << " token: " << j << " name: " << attackCode[j] << "\n";
+						cout << "error (food) no: " << modLoadingErrors << " token: " << j << " name: " << foodCode[j] << "\n";
 					}
 				}
+				j++;
 			}
 			worldFoods.push_back(temp);
 			i = j - 1;
 		}
+	}
+	// parse armor
+	for(int i = 1;i < armorCode.size();i++) {
+		string s = armorCode[i];
+		if (s[0] == '-') {
+			armorPiece temp;
+			temp.name = s.substr(1);
+			int j = i + 1;
+			while(j < armorCode.size() && armorCode[j][0] != '-' && armorCode[j][0] != '=') {
+				s = armorCode[j];
+				if(s == "protection") {
+					temp.dmgReduction = stoi(armorCode[++j]);
+				} else if(s == "height") {
+					temp.height = stoi(armorCode[++j]);
+				} else if(s == "price") {
+					temp.price = stoi(armorCode[++j]);
+				} else if(s == "tier") {
+					temp.tier = stoi(armorCode[++j]);
+				} else {
+					modLoadingErrors++;
+					if (debugMods) {
+						cout << "error (armor) no: " << modLoadingErrors << " token: " << j << " name: " << armorCode[j] << "\n";
+					}
+				}
+				j++;
+			}
+		worldArmor.push_back(temp);
+		i = j - 1;
+		}
+	}
+	// parse weapons
+	for(int i = 1;i < weaponCode.size();i++) {
+		string s = weaponCode[i];
+		if (s[0] == '-') {
+			weapon temp;
+			temp.name = s.substr(1);
+			int j = i + 1;
+			while(j < weaponCode.size() && weaponCode[j][0] != '-' && weaponCode[j][0] != '=') {
+				s = weaponCode[j];
+				if (s == "price") {
+					temp.price = stoi(weaponCode[++j]);
+				} else if (s == "dmg mult") {
+					temp.dmgMult = stof(weaponCode[++j]);
+				} else if (s == "tier") {
+					temp.tier = stoi(weaponCode[++j]);
+				} else {
+					modLoadingErrors++;
+					if(debugMods) {
+						cout << "error (weapon) no: " << modLoadingErrors << " token: " << j << " name: " << weaponCode[j] << "\n";
+					}
+				}
+				j++;
+			}
+			worldWeapons.push_back(temp);
+			i = j - 1;
+		}
+	}
+	// FINALLY, PARSE THE DAMN ENTITIES
+	for(int i = 1;i < entityCode.size();i++) {
+		string s = " ";
 	}
 	// function exit mark
 }
