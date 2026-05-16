@@ -3,12 +3,12 @@
 =armor=
 	-Nice tunic
 		protection:5
-		height:upper
+		height:2
 		price:30
 		tier:2
 	-Nice leggings
 		protection:5
-		height:lower
+		height:1
 		price:30
 =attacks=
 	-Burst
@@ -23,9 +23,16 @@
 	-steel baton
 		price:20
 		dmg mult:2
+		tier:2
+	-fists
+		price:0
+		dmg mult:1.1
+		tier:1
 =entities=
 	-Pedestrian
 		hp:100
 		skill:50
+		tier:1
+		weapon:fists
 		armor:Nice leggings,Nice tunic
 		attacks:punch,kick,burst
