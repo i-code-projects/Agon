@@ -51,6 +51,9 @@ attacks:punch,kick
 - **The controls are all command based**
 - **Every available control is shown in terminal at all moments**
 # To do List
+- [x] Add entity modding support
+- [ ] Complete default.as
+- [ ] Add a more detailed modding guide
 - [ ] Add magic
 - [ ] Add enchantments
 - [ ] Add status effect
