@@ -11,6 +11,12 @@
 using namespace std;
 namespace fs = filesystem;
 
+void parseAttacks(vector<string> &attackCode);
+void parseFoods (vector<string> &foodCode);
+void parseArmor(vector<string> &armorCode);
+void parseWeapons(vector<string> &weaponCode);
+void parseEntities(vector<string> &entityCode);
+
 int isCodeHeader(string header) {
 	if (header == "=data=" || header == "=armor=" || header == "=weapons=" || header == "=attacks=" || header == "=food=" || header == "=entities=") {
 		return 1;
@@ -85,6 +91,14 @@ void modParser(string path) {
 			}
 		}
 	}
+	parseAttacks(attackCode);
+	parseFoods(foodCode);
+	parseArmor(armorCode);
+	parseWeapons(weaponCode);
+	parseEntities(entityCode);
+}
+void parseAttacks(vector<string> &attackCode)
+{
 	// Parse Attacks
 	for(int i = 1;i < attackCode.size();i++) {
 		string s = attackCode[i];
@@ -112,6 +126,9 @@ void modParser(string path) {
 			i = j - 1;
 		}
 	}
+}
+void parseFoods (vector<string> &foodCode)
+{
 	// parse foods (big back)
 	for(int i = 1;i < foodCode.size();i++) {
 		string s = foodCode[i];
@@ -137,6 +154,9 @@ void modParser(string path) {
 			i = j - 1;
 		}
 	}
+}
+void parseArmor(vector<string> &armorCode)
+{
 	// parse armor
 	for(int i = 1;i < armorCode.size();i++) {
 		string s = armorCode[i];
@@ -166,6 +186,9 @@ void modParser(string path) {
 		i = j - 1;
 		}
 	}
+}
+void parseWeapons(vector<string> &weaponCode)
+{
 	// parse weapons
 	for(int i = 1;i < weaponCode.size();i++) {
 		string s = weaponCode[i];
@@ -193,11 +216,95 @@ void modParser(string path) {
 			i = j - 1;
 		}
 	}
+}
+
+void parseEntities(vector<string> &entityCode)
+{
 	// FINALLY, PARSE THE DAMN ENTITIES
 	for(int i = 1;i < entityCode.size();i++) {
-		string s = " ";
+		string s = entityCode[i];
+		if (s[0] == '-') {
+			entity temp;
+			temp.name = s.substr(1);
+			int j = i + 1;
+			while(j < entityCode.size() && entityCode[j][0] != '-' && entityCode[j][0] != '=') {
+				s = entityCode[j];
+				if (s == "hp") {
+					temp.hp = stoi(entityCode[++j]);
+				} else if (s == "skill") {
+					temp.skill = stoi(entityCode[++j]);
+				} else if (s == "tier") {
+					temp.tier = stoi(entityCode[++j]);
+				} else if (s == "weapon") {
+					j++;
+					int success = 0;
+					for(int k = 0; k < worldWeapons.size(); k++) {
+						weapon tempWeapon = worldWeapons[k];
+						if (tempWeapon.name == entityCode[j]) {
+							temp.weapon = tempWeapon;
+							success = 1;
+							break;
+						}
+					}
+					if (!success) {
+						cout << "ERROR : COULD NOT FIND WEAPON " << entityCode[j] << " PLEASE PRESS CTRL+C TO CLOSE THE PROGRAM SAFELY" << "\n";
+						cin.get();
+					}
+				} else if (s == "armor") {
+					int finished = 0;
+					while (!finished) {
+						int success = 0;
+						j++;
+						for (int k = 0; k < worldArmor.size() && !finished; k++) {
+							armorPiece tempArmor = worldArmor[k];
+							if (tempArmor.name == entityCode[j]) {		
+								if (tempArmor.height == 2) {
+									temp.armor.tunic = tempArmor;
+								} else {
+									temp.armor.leggings = tempArmor;
+								}
+								success = 1;
+								if (j + 1 < entityCode.size() && entityCode[j+1] == "and") {
+									j++;
+								} else {
+									finished = 1;
+								}
+							}
+						}
+						if (!success) {
+							cout << "ERROR : COULD NOT FIND ARMOR " << entityCode[j] << " PLEASE PRESS CTRL+C TO CLOSE THE PROGRAM SAFELY" << "\n";							
+							cin.get();
+						}
+					}
+				} else if (s == "attacks") {
+					int finished = 0;
+					while(!finished) {
+						int success = 0;
+						j++;
+						for(int k = 0;k < worldAttacks.size() && !finished;k++) {
+							attack tempAttack = worldAttacks[k];
+							if (tempAttack.name == entityCode[j]) {
+								success = 1;
+								temp.attacks.push_back(tempAttack);
+								if (j+1<entityCode.size()&&entityCode[j+1]=="and") {
+									j++;
+								} else {
+									finished = 1;
+								}
+							}
+						}
+						if(!success) {
+							cout << "ERROR : COULD NOT FIND ATTACK " << entityCode[j] << " PLEASE PRESS CTRL+C TO CLOSE THE PROGRAM SAFELY" << "\n";							
+							cin.get();
+						}
+					}
+				}
+				j++;
+			}
+			worldEntities.push_back(temp);
+			i = j - 1;
+		}
 	}
-	// function exit mark
 }
 
 void modLoader() {

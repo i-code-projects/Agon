@@ -11,7 +11,15 @@
 		height:1
 		price:30
 =attacks=
-	-Burst
+	-punch
+		type:normal
+		base dmg:5
+		height:2
+	-kick
+		type:inverse
+		base dmg:10
+		height:1
+	-burst
 		type:lfhc
 		base dmg:2
 		height:1
